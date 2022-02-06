@@ -1,0 +1,529 @@
+function onLoad(save_state)
+    setupHelperVariables()
+
+    setupConstructedAreas()
+
+    setupConstructionAreas()
+
+    setupCards()
+end
+
+function setupHelperVariables()
+    local tokens = {}
+
+    tokens["White"] = {-12.28, 0.94, -21.53}
+    tokens["Red"] = {-44.32, 0.94, -21.53}
+    tokens["Blue"] = {19.76, 0.94, -21.53}
+    tokens["Green"] = {-19.76, 0.94, 21.55}
+    tokens["Purple"] = {44.32, 0.94, 21.54}
+
+    Global.setTable("_tokens", tokens)
+
+    local generals = {}
+
+    generals["White"] = {-13.87, 0.81, -21.53}
+    generals["Red"] = {-45.92, 0.81, -21.53}
+    generals["Blue"] = {18.16, 0.81, -21.53}
+    generals["Green"] = {-18.16, 0.81, 21.55}
+    generals["Purple"] = {42.76, 0.81, 21.55}
+
+    Global.setTable("_generals", generals)
+
+    local financiers = {}
+
+    financiers["White"] = {-10.71, 0.81, -21.54}
+    financiers["Red"] = {-42.75, 0.81, -21.54}
+    financiers["Blue"] = {21.33, 0.81, -21.54}
+    financiers["Green"] = {-21.33, 0.81, 21.56}
+    financiers["Purple"] = {42.76, 0.81, 21.55}
+
+    Global.setTable("_financiers", financiers)
+
+    local playerKrystalliumsPosition = {}
+
+    playerKrystalliumsPosition["White"] = {-13.35, 1.28, -16.49}
+    playerKrystalliumsPosition["Red"] = {-45.34, 1.28, -16.49}
+    playerKrystalliumsPosition["Blue"] = {18.77, 1.28, -16.49}
+    playerKrystalliumsPosition["Green"] = {-18.78, 1.28, 16.49}
+    playerKrystalliumsPosition["Purple"] = {45.37, 1.28, 16.49}
+
+    Global.setTable("_playerKrystalliumsPosition", playerKrystalliumsPosition)
+
+    -- local playerKrystalliums = {}
+    --
+    -- playerKrystalliums["White"] = ""
+    -- playerKrystalliums["Red"] = ""
+    -- playerKrystalliums["Blue"] = ""
+    -- playerKrystalliums["Green"] = ""
+    -- playerKrystalliums["Purple"] = ""
+    --
+    -- Global.setTable("_playerKrystalliums", playerKrystalliums)
+
+    local empirePositions = {}
+
+    empirePositions["White"] = { -12.24, 0.75, -17.93 }
+    empirePositions["Red"] = { -44.30, 0.75, -17.92 }
+    empirePositions["Blue"] = { 19.81, 0.75, -17.94 }
+    empirePositions["Green"] = { -19.80, 0.75, 17.94 }
+    empirePositions["Purple"] = { 44.28, 0.75, 17.95 }
+
+    Global.setTable("_empirePositions", empirePositions)
+
+    local roundMarkerPositions = {}
+    roundMarkerPositions[1] = { -2.52, 1.04, 9.17 }
+    roundMarkerPositions[2] = { -1.33, 1.04, 9.21 }
+    roundMarkerPositions[3] = { 1.46, 1.04, 9.31 }
+    roundMarkerPositions[4] = { 2.69, 1.04, 9.30 }
+
+    Global.setTable("_roundMarkerPositions", roundMarkerPositions)
+
+    local bags = {}
+
+    bags["material"] = getObjectFromGUID("0e54ca")
+    bags["energy"] = getObjectFromGUID("07189d")
+    bags["science"] = getObjectFromGUID("2398e0")
+    bags["gold"] = getObjectFromGUID("d386c6")
+    bags["exploration"] = getObjectFromGUID("c4f510")
+    bags["krystallium"] = getObjectFromGUID("b53575")
+    bags["financier"] = getObjectFromGUID("a2608e")
+    bags["general"] = getObjectFromGUID("29050b")
+    bags["empire"] = getObjectFromGUID("5cf8ec")
+
+    Global.setTable("_bags", bags)
+
+    local productionZones = {}
+
+    productionZones["Red"] = { -44.24, 0.94, -11.23 }
+    productionZones["White"] = { -12.23, 0.94, -11.23 }
+    productionZones["Blue"] = { 19.83, 0.94, -11.23 }
+    productionZones["Green"] = { -19.75, 0.94, 11.23 }
+    productionZones["Purple"] = { 44.24, 0.94, 11.23 }
+
+    Global.setTable("_productionZones", productionZones)
+
+    local productionDepositPositions = { }
+
+    productionDepositPositions["Red"] = { x = -38.96, y = 0.94, z = -16.39 }
+    productionDepositPositions["White"] = { x = -6.91, y = 0.94, z = -16.39 }
+    productionDepositPositions["Blue"] = { x = 24.83, y = 0.94, z = -16.39 }
+    productionDepositPositions["Green"] = { x = -25.14, y = 0.94, z = 16.39 }
+    productionDepositPositions["Purple"] = { x = 38.95, y = 0.94, z = 16.39 }
+
+    Global.setTable("_productionDepositPositions", productionDepositPositions)
+
+    local cardSelectedButtonLocations = { }
+
+    cardSelectedButtonLocations["White"] = { 3.50, 0.94, -16.43 }
+    cardSelectedButtonLocations["Red"] = { -28.53, 0.94, -16.49 }
+    cardSelectedButtonLocations["Blue"] = { 35.52, 0.94, -16.42 }
+    cardSelectedButtonLocations["Green"] = { -35.81, 0.94, 16.44 }
+    cardSelectedButtonLocations["Purple"] = { 28.65, 0.94, 16.53 }
+
+    Global.setTable("_cardSelectedButtonLocations", cardSelectedButtonLocations)
+
+    local draftZoneGuids = { }
+
+    draftZoneGuids["Red"] = "5bf9d2"
+    draftZoneGuids["White"] = "bb9dda"
+    draftZoneGuids["Blue"] = "70f7b6"
+    draftZoneGuids["Green"] = "800d2a"
+    draftZoneGuids["Purple"] = "24d62b"
+
+    Global.setTable("_draftZoneGuids", draftZoneGuids)
+end
+
+function setupConstructedAreas()
+    local constructedZonePositions = {}
+
+    local playerPositions = {}
+
+    table.insert(playerPositions, {-10.46, 0.82, -13.11})
+    table.insert(playerPositions, {-10.46, 0.97, -12.35})
+    table.insert(playerPositions, {-10.46, 1.11, -11.59})
+    table.insert(playerPositions, {-10.46, 1.26, -10.81})
+    table.insert(playerPositions, {-10.46, 1.41, -10.03})
+    table.insert(playerPositions, {-10.46, 1.55, -9.28})
+    table.insert(playerPositions, {-10.46, 1.70, -8.51})
+    table.insert(playerPositions, {-10.46, 1.85, -7.72})
+    table.insert(playerPositions, {-10.46, 1.99, -6.97})
+    table.insert(playerPositions, {-10.46, 2.14, -6.20})
+    table.insert(playerPositions, {-10.46, 2.28, -5.43})
+    table.insert(playerPositions, {-13.98, 0.82, -13.11})
+    table.insert(playerPositions, {-13.98, 0.97, -12.35})
+    table.insert(playerPositions, {-13.98, 1.11, -11.59})
+    table.insert(playerPositions, {-13.98, 1.26, -10.81})
+    table.insert(playerPositions, {-13.98, 1.41, -10.03})
+    table.insert(playerPositions, {-13.98, 1.55, -9.28})
+    table.insert(playerPositions, {-13.98, 1.70, -8.51})
+    table.insert(playerPositions, {-13.98, 1.85, -7.72})
+    table.insert(playerPositions, {-13.98, 1.99, -6.97})
+    table.insert(playerPositions, {-13.98, 2.14, -6.20})
+    table.insert(playerPositions, {-13.98, 2.28, -5.43})
+
+    constructedZonePositions["White"] = playerPositions
+
+    playerPositions = {}
+
+    table.insert(playerPositions, {-42.50, 0.82, -13.11})
+    table.insert(playerPositions, {-42.50, 0.97, -12.35})
+    table.insert(playerPositions, {-42.50, 1.11, -11.59})
+    table.insert(playerPositions, {-42.50, 1.26, -10.81})
+    table.insert(playerPositions, {-42.50, 1.41, -10.03})
+    table.insert(playerPositions, {-42.50, 1.55, -9.28})
+    table.insert(playerPositions, {-42.50, 1.70, -8.51})
+    table.insert(playerPositions, {-42.50, 1.85, -7.72})
+    table.insert(playerPositions, {-42.50, 1.99, -6.97})
+    table.insert(playerPositions, {-42.50, 2.14, -6.20})
+    table.insert(playerPositions, {-42.50, 2.28, -5.43})
+    table.insert(playerPositions, {-46.00, 0.82, -13.11})
+    table.insert(playerPositions, {-46.00, 0.97, -12.35})
+    table.insert(playerPositions, {-46.00, 1.11, -11.59})
+    table.insert(playerPositions, {-46.00, 1.26, -10.81})
+    table.insert(playerPositions, {-46.00, 1.41, -10.03})
+    table.insert(playerPositions, {-46.00, 1.55, -9.28})
+    table.insert(playerPositions, {-46.00, 1.70, -8.51})
+    table.insert(playerPositions, {-46.00, 1.85, -7.72})
+    table.insert(playerPositions, {-46.00, 1.99, -6.97})
+    table.insert(playerPositions, {-46.00, 2.14, -6.20})
+    table.insert(playerPositions, {-46.00, 2.28, -5.43})
+
+    constructedZonePositions["Red"] = playerPositions
+
+    playerPositions = {}
+
+    table.insert(playerPositions, {21.57, 0.82, -13.11})
+    table.insert(playerPositions, {21.57, 0.97, -12.35})
+    table.insert(playerPositions, {21.57, 1.11, -11.59})
+    table.insert(playerPositions, {21.57, 1.26, -10.81})
+    table.insert(playerPositions, {21.57, 1.41, -10.03})
+    table.insert(playerPositions, {21.57, 1.55, -9.28})
+    table.insert(playerPositions, {21.57, 1.70, -8.51})
+    table.insert(playerPositions, {21.57, 1.85, -7.72})
+    table.insert(playerPositions, {21.57, 1.99, -6.97})
+    table.insert(playerPositions, {21.57, 2.14, -6.20})
+    table.insert(playerPositions, {21.57, 2.28, -5.43})
+    table.insert(playerPositions, {18.07, 0.82, -13.11})
+    table.insert(playerPositions, {18.07, 0.97, -12.35})
+    table.insert(playerPositions, {18.07, 1.11, -11.59})
+    table.insert(playerPositions, {18.07, 1.26, -10.81})
+    table.insert(playerPositions, {18.07, 1.41, -10.03})
+    table.insert(playerPositions, {18.07, 1.55, -9.28})
+    table.insert(playerPositions, {18.07, 1.70, -8.51})
+    table.insert(playerPositions, {18.07, 1.85, -7.72})
+    table.insert(playerPositions, {18.07, 1.99, -6.97})
+    table.insert(playerPositions, {18.07, 2.14, -6.20})
+    table.insert(playerPositions, {18.07, 2.28, -5.43})
+
+    constructedZonePositions["Blue"] = playerPositions
+
+    playerPositions = {}
+
+    table.insert(playerPositions, {-21.60, 0.82, 13.10})
+    table.insert(playerPositions, {-21.59, 0.97, 12.35})
+    table.insert(playerPositions, {-21.59, 1.11, 11.57})
+    table.insert(playerPositions, {-21.59, 1.26, 10.81})
+    table.insert(playerPositions, {-21.59, 1.41, 10.03})
+    table.insert(playerPositions, {-21.59, 1.55, 9.27})
+    table.insert(playerPositions, {-21.59, 1.70, 8.50})
+    table.insert(playerPositions, {-21.59, 1.85, 7.73})
+    table.insert(playerPositions, {-21.59, 1.99, 6.96})
+    table.insert(playerPositions, {-21.59, 2.14, 6.19})
+    table.insert(playerPositions, {-21.59, 2.28, 5.42})
+    table.insert(playerPositions, {-18.10, 0.82, 13.10})
+    table.insert(playerPositions, {-18.10, 0.97, 12.35})
+    table.insert(playerPositions, {-18.10, 1.11, 11.57})
+    table.insert(playerPositions, {-18.10, 1.26, 10.81})
+    table.insert(playerPositions, {-18.10, 1.41, 10.03})
+    table.insert(playerPositions, {-18.10, 1.55, 9.27})
+    table.insert(playerPositions, {-18.10, 1.70, 8.50})
+    table.insert(playerPositions, {-18.10, 1.85, 7.73})
+    table.insert(playerPositions, {-18.10, 1.99, 6.96})
+    table.insert(playerPositions, {-18.10, 2.14, 6.19})
+    table.insert(playerPositions, {-18.10, 2.28, 5.42})
+
+    constructedZonePositions["Green"] = playerPositions
+
+    playerPositions = {}
+
+    table.insert(playerPositions, {42.50, 0.82, 13.10})
+    table.insert(playerPositions, {42.50, 0.97, 12.35})
+    table.insert(playerPositions, {42.50, 1.11, 11.57})
+    table.insert(playerPositions, {42.50, 1.26, 10.81})
+    table.insert(playerPositions, {42.50, 1.41, 10.03})
+    table.insert(playerPositions, {42.50, 1.55, 9.27})
+    table.insert(playerPositions, {42.50, 1.70, 8.50})
+    table.insert(playerPositions, {42.50, 1.85, 7.73})
+    table.insert(playerPositions, {42.50, 1.99, 6.96})
+    table.insert(playerPositions, {42.50, 2.14, 6.19})
+    table.insert(playerPositions, {42.50, 2.28, 5.42})
+    table.insert(playerPositions, {46.00, 0.82, 13.10})
+    table.insert(playerPositions, {46.00, 0.97, 12.35})
+    table.insert(playerPositions, {46.00, 1.11, 11.57})
+    table.insert(playerPositions, {46.00, 1.26, 10.81})
+    table.insert(playerPositions, {46.00, 1.41, 10.03})
+    table.insert(playerPositions, {46.00, 1.55, 9.27})
+    table.insert(playerPositions, {46.00, 1.70, 8.50})
+    table.insert(playerPositions, {46.00, 1.85, 7.73})
+    table.insert(playerPositions, {46.00, 1.99, 6.96})
+    table.insert(playerPositions, {46.00, 2.14, 6.19})
+    table.insert(playerPositions, {46.00, 2.28, 5.42})
+
+    constructedZonePositions["Purple"] = playerPositions
+
+    Global.setTable("_constructedZonePositions", constructedZonePositions)
+end
+
+function setupConstructionAreas()
+    local constructionZonePositions = {}
+    local playerPositions = {}
+
+    table.insert(playerPositions, {-5.20, 0.82, -12.29})
+    table.insert(playerPositions, {-1.70, 0.82, -12.30})
+    table.insert(playerPositions, {1.81, 0.82, -12.30})
+    table.insert(playerPositions, {5.32, 0.82, -12.30})
+    table.insert(playerPositions, {8.83, 0.82, -12.31})
+    table.insert(playerPositions, {12.34, 0.82, -12.29})
+    table.insert(playerPositions, {-5.19, 0.82, -5.12})
+    table.insert(playerPositions, {-1.68, 0.82, -5.12})
+    table.insert(playerPositions, {1.83, 0.82, -5.12})
+    table.insert(playerPositions, {5.32, 0.82, -5.12})
+    table.insert(playerPositions, {8.83, 0.82, -5.12})
+    table.insert(playerPositions, {12.33, 0.82, -5.12})
+
+    constructionZonePositions["White"] = playerPositions
+
+    playerPositions = {}
+    table.insert(playerPositions, {-37.26, 0.82, -12.29})
+    table.insert(playerPositions, {-33.75, 0.82, -12.29})
+    table.insert(playerPositions, {-30.22, 0.82, -12.29})
+    table.insert(playerPositions, {-26.70, 0.82, -12.30})
+    table.insert(playerPositions, {-23.21, 0.82, -12.30})
+    table.insert(playerPositions, {-19.68, 0.82, -12.28})
+    table.insert(playerPositions, {-37.24, 0.82, -5.12})
+    table.insert(playerPositions, {-33.74, 0.82, -5.12})
+    table.insert(playerPositions, {-30.22, 0.82, -5.11})
+    table.insert(playerPositions, {-26.74, 0.82, -5.11})
+    table.insert(playerPositions, {-23.23, 0.82, -5.11})
+    table.insert(playerPositions, {-19.72, 0.82, -5.11})
+
+    constructionZonePositions["Red"] = playerPositions
+
+    playerPositions = {}
+    table.insert(playerPositions, {26.84, 0.82, -12.30})
+    table.insert(playerPositions, {30.35, 0.82, -12.31})
+    table.insert(playerPositions, {33.85, 0.82, -12.30})
+    table.insert(playerPositions, {37.36, 0.82, -12.31})
+    table.insert(playerPositions, {40.87, 0.82, -12.32})
+    table.insert(playerPositions, {44.39, 0.82, -12.30})
+    table.insert(playerPositions, {26.86, 0.82, -5.13})
+    table.insert(playerPositions, {30.36, 0.82, -5.13})
+    table.insert(playerPositions, {33.88, 0.82, -5.13})
+    table.insert(playerPositions, {37.36, 0.82, -5.13})
+    table.insert(playerPositions, {40.87, 0.82, -5.12})
+    table.insert(playerPositions, {44.38, 0.82, -5.13})
+
+    constructionZonePositions["Blue"] = playerPositions
+
+    playerPositions = {}
+    table.insert(playerPositions, {-26.84, 0.82, 12.31})
+    table.insert(playerPositions, {-30.35, 0.82, 12.32})
+    table.insert(playerPositions, {-33.88, 0.82, 12.31})
+    table.insert(playerPositions, {-37.40, 0.82, 12.32})
+    table.insert(playerPositions, {-40.89, 0.82, 12.32})
+    table.insert(playerPositions, {-44.41, 0.82, 12.30})
+    table.insert(playerPositions, {-26.86, 0.82, 5.14})
+    table.insert(playerPositions, {-30.36, 0.82, 5.14})
+    table.insert(playerPositions, {-33.88, 0.82, 5.13})
+    table.insert(playerPositions, {-37.36, 0.82, 5.14})
+    table.insert(playerPositions, {-40.87, 0.82, 5.13})
+    table.insert(playerPositions, {-44.37, 0.82, 5.13})
+
+    constructionZonePositions["Green"] = playerPositions
+
+    playerPositions = {}
+    table.insert(playerPositions, {37.24, 0.82, 12.32})
+    table.insert(playerPositions, {33.73, 0.82, 12.32})
+    table.insert(playerPositions, {30.20, 0.82, 12.32})
+    table.insert(playerPositions, {26.69, 0.82, 12.33})
+    table.insert(playerPositions, {23.19, 0.82, 12.33})
+    table.insert(playerPositions, {19.67, 0.82, 12.31})
+    table.insert(playerPositions, {37.22, 0.82, 5.15})
+    table.insert(playerPositions, {33.72, 0.82, 5.15})
+    table.insert(playerPositions, {30.20, 0.82, 5.14})
+    table.insert(playerPositions, {26.72, 0.82, 5.14})
+    table.insert(playerPositions, {23.21, 0.82, 5.14})
+    table.insert(playerPositions, {19.71, 0.82, 5.14})
+
+    constructionZonePositions["Purple"] = playerPositions
+
+    Global.setTable("_constructionZonePositions", constructionZonePositions)
+end
+
+function setupCards()
+    local cards = {}
+    cards["2f41bd"] = { Name = "Airborne Laboratory" , Cost = { "Energy" , "Energy" , "Energy" }, Production = { "Science" , "Exploration" }, Recycle = "Science" , Type = "Vehicle" }
+    cards["3a7fea"] = { Name = "Airborne Laboratory" , Cost = { "Energy" , "Energy" , "Energy" }, Production = { "Science" , "Exploration" }, Recycle = "Science" , Type = "Vehicle" }
+    cards["fb27a6"] = { Name = "Airborne Laboratory" , Cost = { "Energy" , "Energy" , "Energy" }, Production = { "Science" , "Exploration" }, Recycle = "Science" , Type = "Vehicle" }
+    cards["adac70"] = { Name = "Aircraft Carrier" , BuildBonus= { "General" , "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" , "Energy" , "Energy" , "Energy" }, Production = { "Exploration" }, ProductionMultiplierType= "Vehicle" , Recycle = "Material" , Type = "Vehicle" }
+    cards["095c58"] = { Name = "Alexander's Tomb" , BuildBonus= { "General" , "General" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Recycle = "Gold" , Score = 10, Type = "Discovery" }
+    cards["f82315"] = { Name = "Ancient Astronauts" , BuildBonus= { "Krystallium" , "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "General" }, Production = { "Science" }, ProductionMultiplierType= "Discovery" , Recycle = "Science" , Score = 10, Type = "Discovery" }
+    cards["7e375b"] = { Name = "Aquaculture" , BuildBonus= { "Financier" }, Cost = { "Science" , "Science" , "Science" , "Science" , "Gold" , "Gold" }, Recycle = "Science" , Score = 1, ScoreMultiplier = "Financier" , Type = "Research" }
+    cards["8441a2"] = { Name = "Ark Of The Covenant" , BuildBonus= { "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 5, Type = "Discovery" }
+    cards["96c3c3"] = { Name = "Atlantis" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Krystallium" }, Recycle = "Gold" , Score = 2, ScoreMultiplier = "General" , Type = "Discovery" }
+    cards["8d2ab1"] = { Name = "Bermuda Triangle" , BuildBonus= { "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Science" }, Recycle = "Science" , Score = 4, Type = "Discovery" }
+    cards["ed52d4"] = { Name = "Bionic Grafts" , BuildBonus= { "General" }, Cost = { "Science" , "Science" , "Science" , "Science" , "Science" }, Production = { "Material" , "Material" }, Recycle = "Material" , Score = 4, Type = "Research" }
+    cards["dbaa4c"] = { Name = "Blackbeard's Treasure" , Cost = { "Exploration" , "Exploration" , "Exploration" }, Production = { "Gold" , "Exploration" }, Recycle = "Gold" , Score = 2, Type = "Discovery" }
+    cards["a2bf4c"] = { Name = "Casino City" , BuildBonus= { "Financier" }, Cost = { "Energy" , "Energy" , "Energy" , "Gold" , "Gold" , "Gold" , "Gold" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Financier" , Type = "Project" }
+    cards["de92be"] = { Name = "Casino City" , BuildBonus= { "Financier" }, Cost = { "Energy" , "Energy" , "Energy" , "Gold" , "Gold" , "Gold" , "Gold" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Financier" , Type = "Project" }
+    cards["ac9264"] = { Name = "Center Of The Earth" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "General" , "General" }, Recycle = "Exploration" , Score = 15, Type = "Discovery" }
+    cards["4dc57c"] = { Name = "Cities Of Gold" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Gold" , "Gold" , "Gold" }, Recycle = "Gold" , Score = 3, Type = "Discovery" }
+    cards["c73b95"] = { Name = "City Of Agatha" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Krystallium" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 1, ScoreMultiplier = "General" , Type = "Discovery" }
+    cards["0ca920"] = { Name = "Climate Control" , Cost = { "Science" , "Science" , "Science" , "Science" , "Science" }, Production = { "Energy" , "Energy" , "Gold" }, Recycle = "Energy" , Score = 2, Type = "Research" }
+    cards["f8da1b"] = { Name = "Cryopreservation" , BuildBonus= { "Financier" }, Cost = { "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Science" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Financier" , Type = "Research" }
+    cards["348e7a"] = { Name = "Espionage Agency" , Cost = { "Energy" , "Energy" , "Gold" , "Gold" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 1, Type = "Project" }
+    cards["cc027b"] = { Name = "Espionage Agency" , Cost = { "Energy" , "Energy" , "Gold" , "Gold" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 1, Type = "Project" }
+    cards["28d5f3"] = { Name = "Financial Center" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Material" , "Energy" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["583c2b"] = { Name = "Financial Center" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Material" , "Energy" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["75cc91"] = { Name = "Financial Center" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Material" , "Energy" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["a96745"] = { Name = "Financial Center" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Material" , "Energy" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["e9e964"] = { Name = "Financial Center" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Material" , "Energy" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["31e028"] = { Name = "Fountain Of Youth" , BuildBonus= { "Krystallium" , "Krystallium" , "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Recycle = "Energy" , Score = 1, ScoreMultiplier = "General" , Type = "Discovery" }
+    cards["3da652"] = { Name = "Garden Of The Hesperides" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 2, ScoreMultiplier = "Project" , Type = "Discovery" }
+    cards["8746c1"] = { Name = "Genetic Upgrades" , BuildBonus= { "Financier" , "Financier" }, Cost = { "Science" , "Science" , "Science" , "Science" }, Recycle = "Science" , Score = 3, Type = "Research" }
+    cards["d3febe"] = { Name = "Giant Dam" , Cost = { "Material" , "Material" , "Material" , "Gold" , "Gold" }, Production = { "Energy" , "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Score = 1, Type = "Project" }
+    cards["12ce72"] = { Name = "Giant Tower" , Cost = { "Material" , "Material" , "Gold" , "Gold" , "Gold" , "Financier" }, Recycle = "Gold" , Score = 10, Type = "Project" }
+    cards["43fde0"] = { Name = "Gravity Inverter" , BuildBonus= { "Financier" }, Cost = { "Energy" , "Science" , "Science" , "Science" , "Science" , "Krystallium" }, Recycle = "Science" , Score = 2, ScoreMultiplier = "Project" , Type = "Research" }
+    cards["5236a7"] = { Name = "Harbor Zone" , BuildBonus= { "Financier" , "Financier" }, Cost = { "Gold" , "Gold" , "Gold" , "Gold" , "Gold" }, Production = { "Material" , "Material" , "Gold" , "Gold" }, Recycle = "Gold" , Score = 2, Type = "Project" }
+    cards["eea74c"] = { Name = "Harbor Zone" , BuildBonus= { "Financier" , "Financier" }, Cost = { "Gold" , "Gold" , "Gold" , "Gold" , "Gold" }, Production = { "Material" , "Material" , "Gold" , "Gold" }, Recycle = "Gold" , Score = 2, Type = "Project" }
+    cards["ea258f"] = { Name = "Human Cloning" , BuildBonus= { "Financier" }, Cost = { "Science" , "Science" , "Gold" }, Production = { "Gold" }, Recycle = "Gold" , Score = 1, Type = "Research" }
+    cards["296ffc"] = { Name = "Icebreaker" , Cost = { "Energy" , "Energy" , "Energy" , "Science" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["39cc6e"] = { Name = "Icebreaker" , Cost = { "Energy" , "Energy" , "Energy" , "Science" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["806a25"] = { Name = "Icebreaker" , Cost = { "Energy" , "Energy" , "Energy" , "Science" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["bd5ed9"] = { Name = "Icebreaker" , Cost = { "Energy" , "Energy" , "Energy" , "Science" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["5c3214"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["7f680a"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["c9ec7a"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["c9f8ef"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["d48a1c"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["dedc12"] = { Name = "Industrial Complex" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Gold" }, Recycle = "Gold" , Type = "Structure" }
+    cards["b84397"] = { Name = "Island Of Avalon" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Science" }, Recycle = "Science" , Score = 7, Type = "Discovery" }
+    cards["c9800a"] = { Name = "Juggernaut" , BuildBonus= { "General" , "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" , "Energy" , "Energy" , "Krystallium" }, Production = { "Exploration" , "Exploration" }, Recycle = "Material" , Score = 1, ScoreMultiplier = "Vehicle" , Type = "Vehicle" }
+    cards["d80a93"] = { Name = "King Solomon's Mines" , Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Gold" }, ProductionMultiplierType= "Structure" , Recycle = "Gold" , Type = "Discovery" }
+    cards["0e16d8"] = { Name = "Lost Continent Of Mu" , BuildBonus= { "Krystallium" , "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Gold" }, Recycle = "Gold" , Score = 2, ScoreMultiplier = "Discovery" , Type = "Discovery" }
+    cards["3d3130"] = { Name = "Lunar Base" , BuildBonus= { "General" , "General" }, Cost = { "Energy" , "Energy" , "Science" , "Science" , "Gold" , "Gold" , "Krystallium" }, Recycle = "Exploration" , Score = 10, Type = "Project" }
+    cards["e86f7b"] = { Name = "Magnetic Train" , BuildBonus= { "Financier" , "Financier" }, Cost = { "Energy" , "Science" , "Gold" , "Gold" , "Gold" }, Production = { "Gold" }, ProductionMultiplierType= "Structure" , Recycle = "Gold" , Score = 2, Type = "Project" }
+    cards["0c4b3d"] = { Name = "Mega-Bomb" , BuildBonus= { "General" , "General" }, Cost = { "Energy" , "Energy" , "Science" , "Science" }, Recycle = "Energy" , Score = 3, Type = "Research" }
+    cards["28a8f0"] = { Name = "Mega-Drill" , Cost = { "Material" , "Energy" , "Energy" }, Production = { "Material" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["9348b8"] = { Name = "Mega-Drill" , Cost = { "Material" , "Energy" , "Energy" }, Production = { "Material" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["99a314"] = { Name = "Mega-Drill" , Cost = { "Material" , "Energy" , "Energy" }, Production = { "Material" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["f061b3"] = { Name = "Mega-Drill" , Cost = { "Material" , "Energy" , "Energy" }, Production = { "Material" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["00e1d4"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["044eed"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["2cb45d"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["6522b5"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["6c6021"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["aac368"] = { Name = "Military Base" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Material" , "Science" }, Recycle = "Material" , Type = "Structure" }
+    cards["511fe7"] = { Name = "Museum" , Cost = { "Gold" , "Gold" , "Gold" }, Recycle = "Exploration" , Score = 1, ScoreMultiplier = "Discovery" , Type = "Project" }
+    cards["b0b508"] = { Name = "Museum" , Cost = { "Gold" , "Gold" , "Gold" }, Recycle = "Exploration" , Score = 2, ScoreMultiplier = "Discovery" , Type = "Project" }
+    cards["b1c2c3"] = { Name = "National Monument" , Cost = { "Material" , "Material" , "Material" , "Material" , "Material" , "Gold" , "Gold" , "Gold" }, Recycle = "Gold" , Score = 2, ScoreMultiplier = "Project" , Type = "Project" }
+    cards["42eb6a"] = { Name = "Neuroscience" , Cost = { "Science" , "Science" , "Science" }, Production = { "Science" }, ProductionMultiplierType= "Research" , Recycle = "Science" , Score = 1, Type = "Research" }
+    cards["1d4c94"] = { Name = "Nuclear Plant" , Cost = { "Material" , "Material" , "Material" , "Material" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["31abdf"] = { Name = "Nuclear Plant" , Cost = { "Material" , "Material" , "Material" , "Material" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["3e0bfa"] = { Name = "Nuclear Plant" , Cost = { "Material" , "Material" , "Material" , "Material" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["bfaf91"] = { Name = "Nuclear Plant" , Cost = { "Material" , "Material" , "Material" , "Material" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["d24762"] = { Name = "Nuclear Plant" , Cost = { "Material" , "Material" , "Material" , "Material" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["39b092"] = { Name = "Offshore Oil Rig" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Exploration" }, Production = { "Energy" , "Gold" }, Recycle = "Energy" , Type = "Structure" }
+    cards["51874b"] = { Name = "Offshore Oil Rig" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Exploration" }, Production = { "Energy" , "Gold" }, Recycle = "Energy" , Type = "Structure" }
+    cards["c37c2d"] = { Name = "Offshore Oil Rig" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Exploration" }, Production = { "Energy" , "Gold" }, Recycle = "Energy" , Type = "Structure" }
+    cards["dfb258"] = { Name = "Offshore Oil Rig" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Exploration" }, Production = { "Energy" , "Gold" }, Recycle = "Energy" , Type = "Structure" }
+    cards["eb7660"] = { Name = "Offshore Oil Rig" , BuildBonus= { "Financier" }, Cost = { "Material" , "Material" , "Material" , "Exploration" }, Production = { "Energy" , "Gold" }, Recycle = "Energy" , Type = "Structure" }
+    cards["6770b5"] = { Name = "Parallel Dimension" , BuildBonus= { "Krystallium" , "Krystallium" , "Krystallium" }, Cost = { "Science" , "Science" , "Science" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "General" }, Recycle = "Exploration" , Score = 3, ScoreMultiplier = "Research" , Type = "Discovery" }
+    cards["053eab"] = { Name = "Polar Base" , BuildBonus= { "General" }, Cost = { "Energy" , "Energy" , "Energy" , "Gold" , "Gold" , "Gold" , "Gold" }, Production = { "Exploration" , "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 2, ScoreMultiplier = "Discovery" , Type = "Project" }
+    cards["c5590f"] = { Name = "Propaganda Center" , BuildBonus= { "General" }, Cost = { "Gold" , "Gold" , "Gold" }, Production = { "Gold" }, ProductionMultiplierType= "Project" , Recycle = "Gold" , Score = 1, Type = "Project" }
+    cards["fe93f6"] = { Name = "Propaganda Center" , BuildBonus= { "General" }, Cost = { "Gold" , "Gold" , "Gold" }, Production = { "Gold" }, ProductionMultiplierType= "Project" , Recycle = "Gold" , Score = 1, Type = "Project" }
+    cards["3acb3d"] = { Name = "Quantum Generator" , Cost = { "Science" , "Science" , "Science" , "Science" , "Science" }, Production = { "Energy" , "Energy" , "Energy" }, Recycle = "Energy" , Score = 1, ScoreMultiplier = "Vehicle" , Type = "Research" }
+    cards["15c2e0"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["213ea8"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["451c04"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["68e057"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["9ac565"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["9de1c7"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["d1b9a8"] = { Name = "Recycling Plant" , Cost = { "Material" , "Material" }, Production = { "Material" , "Material" }, Recycle = "Material" , Type = "Structure" }
+    cards["4d3ae1"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["ae0dfc"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["b965be"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["bc8715"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["c8d2d8"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["cd0bd2"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["fd3bcd"] = { Name = "Research Center" , Cost = { "Material" , "Material" , "Material" , "Energy" }, Production = { "Science" , "Science" }, Recycle = "Science" , Type = "Structure" }
+    cards["0ef0d4"] = { Name = "Robot Assistants" , Cost = { "Science" , "Science" , "Science" }, Production = { "Material" }, ProductionMultiplierType= "Structure" , Recycle = "Material" , Score = 1, Type = "Research" }
+    cards["82a13f"] = { Name = "Robotic Animals" , BuildBonus= { "General" }, Cost = { "Energy" , "Science" , "Science" }, Production = { "Material" }, Recycle = "Material" , Score = 2, Type = "Research" }
+    cards["698e8b"] = { Name = "Roswell" , BuildBonus= { "General" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Science" }, Recycle = "Science" , Score = 1, ScoreMultiplier = "General" , Type = "Discovery" }
+    cards["5bdaca"] = { Name = "Satellites" , BuildBonus= { "General" }, Cost = { "Energy" , "Energy" , "Science" , "Science" , "Science" , "Science" }, Production = { "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 3, Type = "Research" }
+    cards["b98a12"] = { Name = "Saucer Squadron" , Cost = { "Energy" , "Energy" , "Energy" , "Science" , "Science" }, Production = { "Exploration" , "Exploration" , "Exploration" }, Recycle = "Science" , Type = "Vehicle" }
+    cards["e8f2b6"] = { Name = "Saucer Squadron" , Cost = { "Energy" , "Energy" , "Energy" , "Science" , "Science" }, Production = { "Exploration" , "Exploration" , "Exploration" }, Recycle = "Science" , Type = "Vehicle" }
+    cards["1dbdab"] = { Name = "Secret Laboratory" , BuildBonus= { "Krystallium" }, Cost = { "Material" , "Material" , "Gold" , "Gold" , "Gold" }, Production = { "Science" , "Science" }, Recycle = "Science" , Score = 1, ScoreMultiplier = "Research" , Type = "Project" }
+    cards["8f9a52"] = { Name = "Secret Laboratory" , BuildBonus= { "Krystallium" }, Cost = { "Material" , "Material" , "Gold" , "Gold" , "Gold" }, Production = { "Science" , "Science" }, Recycle = "Science" , Score = 1, ScoreMultiplier = "Research" , Type = "Project" }
+    cards["16c0a0"] = { Name = "Secret Society" , Cost = { "Gold" , "Gold" , "Gold" , "Krystallium" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Financier" , Type = "Project" }
+    cards["ccaf55"] = { Name = "Secret Society" , Cost = { "Gold" , "Gold" , "Gold" , "Krystallium" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Financier" , Type = "Project" }
+    cards["921a83"] = { Name = "Security Automations" , Cost = { "Science" , "Science" , "Science" , "Science" , "Gold" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "General" , Type = "Research" }
+    cards["dee6a2"] = { Name = "Solar Cannon" , BuildBonus= { "General" }, Cost = { "Energy" , "Energy" , "Science" , "Gold" , "Gold" , "Gold" }, Recycle = "Energy" , Score = 1, ScoreMultiplier = "General" , Type = "Project" }
+    cards["b319d7"] = { Name = "Space Elevator" , BuildBonus= { "Financier" }, Cost = { "Energy" , "Energy" , "Energy" , "Science" , "Gold" , "Gold" }, Recycle = "Energy" , Score = 1, ScoreMultiplier = "Financier" , Type = "Project" }
+    cards["491cf3"] = { Name = "Submarine" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Energy" , "Energy" , "Energy" }, Production = { "Exploration" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["66a8af"] = { Name = "Submarine" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Energy" , "Energy" , "Energy" }, Production = { "Exploration" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["cee565"] = { Name = "Submarine" , BuildBonus= { "General" }, Cost = { "Material" , "Material" , "Energy" , "Energy" , "Energy" }, Production = { "Exploration" , "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["1c857f"] = { Name = "Super-Solders" , BuildBonus= { "General" }, Cost = { "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Science" }, Recycle = "Exploration" , Score = 1, ScoreMultiplier = "General" , Type = "Research" }
+    cards["fdc11b"] = { Name = "Super-Sonar" , Cost = { "Science" , "Science" , "Science" , "Science" }, Production = { "Exploration" }, ProductionMultiplierType= "Vehicle" , Recycle = "Exploration" , Score = 1, Type = "Research" }
+    cards["b30917"] = { Name = "Supercomputer" , Cost = { "Science" , "Science" , "Science" , "Science" }, Production = { "Science" }, Recycle = "Science" , Score = 1, ScoreMultiplier = "Vehicle" , Type = "Research" }
+    cards["26e081"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["3d3e5b"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["4e728f"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["5b43b4"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["5ce19e"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["6100fe"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["7901a1"] = { Name = "Tank Division" , BuildBonus= { "General" }, Cost = { "Material" , "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Material" , Type = "Vehicle" }
+    cards["582583"] = { Name = "Teleportation" , BuildBonus= { "Krystallium" , "Krystallium" }, Cost = { "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Science" }, Recycle = "Exploration" , Score = 8, Type = "Research" }
+    cards["df57ee"] = { Name = "Time Travel" , Cost = { "Science" , "Science" , "Science" , "Science" , "Science" , "Krystallium" , "Krystallium" , "Krystallium" }, Recycle = "Exploration" , Score = 15, Type = "Research" }
+    cards["310484"] = { Name = "Transmutation" , BuildBonus= { "Krystallium" }, Cost = { "Science" , "Science" , "Science" , "Gold" , "Gold" }, Production = { "Gold" , "Gold" , "Gold" }, Recycle = "Gold" , Score = 1, Type = "Research" }
+    cards["0b385e"] = { Name = "Transportation Network" , Cost = { "Material" , "Material" , "Material" }, Recycle = "Material" , Score = 1, ScoreMultiplier = "Vehicle" , Type = "Structure" }
+    cards["59b807"] = { Name = "Transportation Network" , Cost = { "Material" , "Material" , "Material" }, Recycle = "Material" , Score = 1, ScoreMultiplier = "Vehicle" , Type = "Structure" }
+    cards["5d3098"] = { Name = "Treasure Of The Templars" , BuildBonus= { "Krystallium" , "Krystallium" }, Cost = { "Exploration" , "Exploration" , "Exploration" , "Exploration" , "Exploration" }, Production = { "Gold" , "Gold" }, Recycle = "Gold" , Score = 3, Type = "Discovery" }
+    cards["c34b19"] = { Name = "Underground City" , BuildBonus= { "Krystallium" }, Cost = { "Material" , "Material" , "Material" , "Gold" , "Gold" , "Gold" }, Production = { "Material" , "Material" , "Energy" , "Energy" }, Recycle = "Energy" , Score = 3, Type = "Project" }
+    cards["de2b42"] = { Name = "Underground City" , BuildBonus= { "Krystallium" }, Cost = { "Material" , "Material" , "Material" , "Gold" , "Gold" , "Gold" }, Production = { "Material" , "Material" , "Energy" , "Energy" }, Recycle = "Energy" , Score = 3, Type = "Project" }
+    cards["06338c"] = { Name = "Underwater City" , Cost = { "Energy" , "Energy" , "Science" , "Gold" , "Gold" }, Production = { "Science" , "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 3, Type = "Project" }
+    cards["436502"] = { Name = "Underwater City" , Cost = { "Energy" , "Energy" , "Science" , "Gold" , "Gold" }, Production = { "Science" , "Exploration" , "Exploration" }, Recycle = "Exploration" , Score = 3, Type = "Project" }
+    cards["fb8472"] = { Name = "Universal Exposition" , Cost = { "Gold" , "Gold" , "Gold" , "Financier" , "Financier" }, Recycle = "Gold" , Score = 3, ScoreMultiplier = "Research" , Type = "Project" }
+    cards["08d530"] = { Name = "Universal Vaccine" , Cost = { "Science" , "Science" , "Science" }, Recycle = "Gold" , Score = 1, ScoreMultiplier = "Project" , Type = "Research" }
+    cards["d7c0fd"] = { Name = "University" , Cost = { "Science" , "Gold" , "Gold" }, Production = { "Science" }, ProductionMultiplierType= "Project" , Recycle = "Science" , Score = 2, Type = "Project" }
+    cards["6ad79b"] = { Name = "Unknown Technology" , Cost = { "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Science" , "Krystallium" }, Recycle = "Science" , Score = 3, ScoreMultiplier = "Research" , Type = "Research" }
+    cards["1e1f1d"] = { Name = "Virtual Reality" , Cost = { "Science" , "Science" , "Science" , "Science" , "Science" }, Production = { "Gold" }, ProductionMultiplierType= "Research" , Recycle = "Gold" , Score = 2, Type = "Research" }
+    cards["120b0d"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["5a9882"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["8b7acb"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["a3bfe8"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["bb7f30"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["da86e6"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["fdbf6e"] = { Name = "Wind Turbines" , Cost = { "Material" , "Material" }, Production = { "Energy" }, Recycle = "Energy" , Type = "Structure" }
+    cards["94a0d3"] = { Name = "World Congress" , Cost = { "Gold" , "Gold" , "Gold" , "Gold" , "Gold" , "Gold" , "Financier" , "Financier" }, Recycle = "Gold" , Score = 3, ScoreMultiplier = "Project" , Type = "Project" }
+    cards["0ab0e1"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["14ccab"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["3ca245"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["9d89a6"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["b9550a"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+    cards["d8ae1f"] = { Name = "Zeppelin" , Cost = { "Energy" , "Energy" }, Production = { "Exploration" }, Recycle = "Exploration" , Type = "Vehicle" }
+
+    -- EMPIRES
+    cards["300234"] = { Name = "Noram States - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Material", "Gold" }, ProductionMultiplierType = nil, Score = 1, ScoreMultiplier = "Financier" }
+    cards["8007b9"] = { Name = "Republic Of Europe - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = 1, ScoreMultiplier = "General" }
+    cards["742cb1"] = { Name = "Aztec Empire - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Energy", "Energy", "Exploration" }, ProductionMultiplierType = nil, Score = 3, ScoreMultiplier = "Discovery" }
+    cards["e0676d"] = { Name = "Federation Of Asia - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Gold", "Gold" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Project" }
+    cards["0776f9"] = { Name = "Panafrican Union - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Science", "Science" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Research" }
+
+    cards["6f1934"] = { Name = "Noram States - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["a347a2"] = { Name = "Republic Of Europe - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["0fec54"] = { Name = "Aztec Empire - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["524ce7"] = { Name = "Federation Of Asia - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["b339ab"] = { Name = "Panafrican Union - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+
+    Global.setTable("_allCards", cards)
+end

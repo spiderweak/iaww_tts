@@ -1,0 +1,1250 @@
+_deckGuid = "354cf2"
+_roundMarkerGuid = "0e537e"
+_variableSetupGuid = "ff9bdf"
+_boardGuid = "437cd7"
+_draftAreas = {
+  "5bf9d2",
+  "bb9dda",
+  "70f7b6" ,
+  "24d62b",
+  "800d2a"
+}
+
+_board = nil
+_currentRound = 0
+_currentDraftRound = 0
+_empireMode = 1
+_currentProductionStage = 1
+_debug = false
+_resourceCubeMesh = "http://cloud-3.steamusercontent.com/ugc/1021697620253583883/DD783896F5F7A13F743F4A1EB8BD15AACD586F76/"
+
+_discardPileLocation = { 6.83, 0.82, 11.47 }
+_discardPileRotation = { 0.00, 270.00, 0.00 }
+
+_productionStages = {
+    "Material",
+    "Energy",
+    "Science",
+    "Gold",
+    "Exploration"
+}
+
+_Players = {}
+_allCards = {}
+_bags = {}
+_productionZones = { }
+_productionDepositPositions = { }
+_cardSelectedButtonLocations = { }
+_draftZoneGuids = { }
+_cardSelectedButtons = {}
+_constructionZonePositions = {}
+_draftPlayersReady = {}
+_empirePositions = {}
+_roundMarkerPositions = {}
+_tokens = {}
+_constructedZonePositions = {}
+_playerKrystalliumsPosition = {}
+_playerKrystalliumBags = {}
+
+_playersDraftDone = {}
+
+_allPlayers = {
+    Blue = 1,
+    Red = 2,
+    Green = 3,
+    Purple = 4,
+    White = 5
+}
+
+--[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
+
+--[[ The onLoad event is called after the game save finishes loading. --]]
+function onLoad()
+    _board = getObjectFromGUID("54b301")
+    _board.interactable = false
+
+    _board.createButton({
+        click_function = "startGame",
+        label          = "Start Game",
+        position       = { -0.15, 0, -1.175},
+        width          = 750,
+        height         = 200,
+        font_size      = 80
+    })
+
+    _board.createButton({
+        click_function = "setEmpireMode",
+        label          = "Empires - Side A",
+        position       = { -0.15, 0, -1.6 },
+        width          = 750,
+        height         = 200,
+        font_size      = 70
+    })
+
+    _board.createButton({
+        click_function = "produce",
+        label          = "Produce\nMaterial",
+        position       = { -0.15, 0, -1.4},
+        width          = 750,
+        height         = 300,
+        font_size      = 80,
+        scale          = { 0, 0, 0 }
+    })
+
+    _board.createButton({
+        click_function = "score",
+        label          = "Score\nGame",
+        position       = { -0.15, 0, -1.4},
+        width          = 750,
+        height         = 300,
+        font_size      = 80,
+        scale          = { 0, 0, 0 }
+    })
+
+    -- getObjectFromGUID(_variableSetupGuid).setScale({ 0, 0, 0})
+
+--    getObjectFromGUID("ff9bdf").createButton({
+--        click_function = "test",
+--        label          = "Test",
+--        width          = 500,
+--        height         = 500,
+--    })
+end
+
+function onScriptingButtonDown(index, color)
+    local yaw = Player[color].getHandTransform(1).rotation.y;
+
+    if (index == 1) then
+        Player[color].lookAt({
+            position = {x=0,y=0,z=0},
+            pitch    = 90,
+            yaw      = yaw,
+            distance = 50,
+        })
+    elseif (index == 2) then
+
+        Player[color].lookAt({
+            position = _cardSelectedButtonLocations[color],
+            pitch    = 90,
+            yaw      = yaw,
+            distance = 30,
+        })
+    end
+end
+
+function test(o, color)
+    _Players = Player.getPlayers()
+    produce()
+    --_board.editButton({ index = 2, scale = { 1, 1, 1 } })
+    --
+    --setupDraftedCardsButtons()
+end
+
+
+function score()
+    local scores = {}
+    local empireCounts = {}
+    local tokenCounts = {}
+
+    for i, player in pairs(_Players) do
+        debug ("Scoring for " .. player.color)
+
+        local playerScore = 0
+
+        local scoringArea = Physics.cast({
+            origin       = _productionZones[player.color],
+            direction    = { 0, 1, 0 },
+            type         = 3,
+            size         = { 7.1, 5, 18.26 },
+            debug        = _debug
+        })
+
+        local tokensArea = Physics.cast({
+            origin       = _tokens[player.color],
+            direction    = { 0, 1, 0 },
+            type         = 3,
+            size         = { 6, 5, 2 },
+            debug        = _debug
+        })
+
+        local counts = {}
+
+        counts["structure"] = 0
+        counts["vehicle"] = 0
+        counts["research"] = 0
+        counts["project"] = 0
+        counts["discovery"] = 0
+        counts["general"] = 0
+        counts["financier"] = 0
+
+        for j, token in pairs(tokensArea) do
+            if (token.hit_object.tag == "Tile") then
+                if (string.lower(token.hit_object.getName()) == "general" or string.lower(token.hit_object.getName()) == "financier")  then
+                    if (token.hit_object.getQuantity() > 1) then
+                        counts[string.lower(token.hit_object.getName())] = counts[string.lower(token.hit_object.getName())] + token.hit_object.getQuantity()
+                    else
+                        counts[string.lower(token.hit_object.getName())] = counts[string.lower(token.hit_object.getName())] + 1
+                    end
+                end
+            end
+        end
+
+        for j, card in pairs(scoringArea) do
+            if (card.hit_object.tag == "Card") then
+                local cardDetails = _allCards[card.hit_object.guid]
+
+                if (cardDetails.Type != nil) then
+                    counts[string.lower(cardDetails.Type)] = counts[string.lower(cardDetails.Type)] + 1
+                end
+            end
+        end
+
+        for j, card in pairs(scoringArea) do
+            if (card.hit_object.tag == "Card" or card.hit_object.tag == "Tile") then
+                local cardDetails = _allCards[card.hit_object.guid]
+
+                if (cardDetails.Score != nil) then
+                    local cardScore = 0
+                    if (cardDetails.ScoreMultiplier != nil) then
+                        cardScore = (cardDetails.Score * counts[string.lower(cardDetails.ScoreMultiplier)])
+                    else
+                        cardScore = cardDetails.Score
+                    end
+
+                    debug("Scoring '" .. cardDetails.Name .. "' --> " .. cardScore)
+
+                    playerScore = playerScore + cardScore
+                end
+            end
+        end
+
+        empireCounts[player.color] = counts["structure"] + counts["vehicle"] + counts["research"] + counts["project"] + counts["discovery"]
+        tokenCounts[player.color] = counts["general"] + counts["financier"]
+        scores[player.color] = (counts["general"] + counts["financier"] + playerScore)
+
+        debug("Generals: " .. counts["general"])
+        debug("Financiers: " .. counts["financier"])
+        debug("Player Score: " .. playerScore)
+
+        debug("Total Player Score: " .. scores[player.color])
+    end
+
+    local offset = 1
+
+    local winner = nil
+    local highScore = 0
+    local tied = {}
+
+    for color, score in spairs(scores, function(t, a, b) return t[a] > t[b] end) do
+        if (winner == nil) then
+            winner = color
+            highScore = score
+        elseif highScore == score then
+            table.insert(tied, color)
+        end
+
+        debug(color .. " -- " .. score)
+
+        local howHigh = (score / 10) + 1
+
+        local o = spawnObject({
+            type              = "BlockSquare",
+            position          = {-5 + offset, 0.94, 20},
+            scale             = {3, howHigh, 3}
+        })
+
+        o.setColorTint(color)
+        o.setName(tostring(score))
+
+        local t = spawnObject({
+            type              = "3DText",
+            position          = {-5 + offset, 0.84 + howHigh, 20.5},
+            rotation          = { 90, 0, 0 }
+
+        })
+
+        t.TextTool.setFontColor({ 0, 0, 0 })
+        t.setValue(tostring(score))
+
+        offset = offset + 3.25
+    end
+
+    local message = nil
+
+    if (#tied == 0) then
+        message = "Contratulations " .. winner .. "! You've won with the score of " .. tostring(highScore)
+    else
+        table.insert(tied, winner)
+
+        local highEmpire = nil
+
+        local stillTied = {}
+
+        for i, color in spairs(tied, function(t, a, b) return empireCounts[t[a]] > empireCounts[t[b]] end) do
+            if (highEmpire == nil) then
+                highEmpire = empireCounts[color]
+                winner = color
+            elseif (highEmpire == empireCounts[color]) then
+                table.insert(stillTied, color)
+            end
+        end
+
+        if (#stillTied > 0) then
+            local highTokenCount = nil
+
+            local evenStillTied = {}
+
+            for i, color in spairs(tied, function(t, a, b) return tokenCounts[t[a]] > tokenCounts[t[b]] end) do
+                if (highTokenCount == nil) then
+                    highTokenCount = tokenCounts[color]
+                    winner = color
+                elseif (highTokenCount == tokenCounts[color]) then
+                    table.insert(evenStillTied, color)
+                end
+            end
+
+            if (#evenStillTied == 0) then
+                message = "Contratulations " .. winner .. "! You've won with the score of " .. tostring(highScore) .. " and more tokens"
+            else
+                table.insert(evenStillTied, winner)
+
+                winners = ""
+
+                for i, color in pairs(evenStillTied) do
+                    winners = winners .. color .. " and "
+                end
+
+                message = "Contratulations " .. string.sub(winners, 1, #winners - 5) .. "! You share the victory with the score of " .. tostring(highScore)
+            end
+        else
+            message = "Contratulations " .. winner .. "! You've won with the score of " .. tostring(highScore) .. " and larger empire"
+        end
+    end
+
+    broadcastToAll(message, { 1, 1, 1, 1 })
+
+    winnerMessage = spawnObject({
+        type              = "3DText",
+        position          = {0, 10, 0},
+        rotation          = { 90, 0, 0 }
+    })
+
+    winnerMessage.setValue(message)
+    winnerMessage.TextTool.setFontSize(120)
+
+    startLuaCoroutine(Global, "announceWinner")
+
+    _board.editButton({ index = 3, scale = { 0, 0, 0 } })
+end
+
+function announceWinner()
+    for i = 1, 180 do
+        winnerMessage.setRotationSmooth({ 90, i * 2, 0}, false, true)
+
+        if (i % 3 == 0) then
+            winnerMessage.TextTool.setFontColor({ math.random(0, i) / i, math.random(0, i) / i, math.random(0, i) / i })
+        end
+
+        wait(1)
+    end
+
+    winnerMessage.TextTool.setFontColor({ 1, 1, 1 })
+
+    return 1
+end
+
+function startGame()
+    _currentRound = _currentRound + 1
+
+    local deck = getObjectFromGUID(_deckGuid)
+
+    if _currentRound == 1 then
+        --_buttons["StartGame"].editButton({ label = "Start Next Round", tooltip = "Start Next Round" })
+        _board.editButton({ index = 0, label = "Start Next Round" })
+
+        deck.shuffle()
+
+        startLuaCoroutine(Global, "dealEmpires")
+
+        Wait.frames(function() createPlayerKrystalliumBags() end, 100)
+
+        _board.editButton({ index = 1, scale = { 0, 0, 0 } })
+    end
+
+    _board.editButton({ index = 0, scale = { 0, 0, 0 } })
+
+    local roundMarker = getObjectFromGUID(_roundMarkerGuid)
+    roundMarker.setPosition(_roundMarkerPositions[_currentRound])
+    roundMarker.flip()
+    roundMarker.highlightOn({ 1, 1, 1 }, 3)
+
+    if #getSeatedPlayers() == 2 then
+        deck.deal(10)
+    else
+        deck.deal(7)
+    end
+
+    createRoundButtons()
+end
+
+function dealEmpires()
+    if _empireMode != 4 then
+        if _empireMode == 3 then
+            _empireMode = math.random(1, 2)
+        end
+
+        _bags["empire"].shuffle()
+        for i, p in pairs(Player.getPlayers()) do
+            local o = _bags["empire"].takeObject({
+                position          = _empirePositions[p.color],
+                rotation          = { 0, 180 - p.getHandTransform().rotation.y, 0 },
+                index             = 1,
+                smooth            = true
+            })
+
+            if _empireMode == 2 then
+                o.setState(2)
+            end
+
+            wait(5)
+
+            o.setLock(true)
+            --o.interactable = false
+        end
+    end
+
+    return 1
+end
+
+function onzChat(message, sender)
+
+  print(_bags["empire"].guid)
+  print(#_bags["empire"].getObjects())
+  if (#_bags["empire"].getObjects() == 1) then
+    for i, v in ipairs(_bags["empire"].getObjects()) do
+      printToAll(v.guid)
+      printToAll(v.name)
+      printToAll(v.deal())
+      v.setPosition(_empirePositions[message])
+    end
+  else
+    local o = _bags["empire"].takeObject({
+        position          = _empirePositions[message],
+        rotation          = { 0, 180 - sender.getHandTransform().rotation.y, 0 },
+        index             = 1,
+        smooth            = true
+    })
+  end
+end
+
+function createPlayerKrystalliumBags()
+    for i, p in pairs(Player.getPlayers()) do
+        _playerKrystalliumBags[p.color] = spawnObject({
+            type              = "Custom_Model",
+            position          = _playerKrystalliumsPosition[p.color],
+            scale             = { 0.58, 0.58, 0.58 }
+        })
+
+        _playerKrystalliumBags[p.color].setCustomObject({
+            mesh = _resourceCubeMesh,
+            diffuse = "",
+            type = 6
+        })
+
+        _playerKrystalliumBags[p.color].setColorTint({ 218 / 255, 25 / 255, 25 / 255, 255 / 255 })
+        _playerKrystalliumBags[p.color].setLock(true)
+    end
+end
+
+function setEmpireMode()
+    _empireMode = _empireMode + 1
+
+    if (_empireMode > 4) then _empireMode = 1 end
+
+    if _empireMode == 1 then
+        _board.editButton({ index = 1, label = "Empires - Side A" })
+    elseif _empireMode == 2 then
+        _board.editButton({ index = 1, label = "Empires - Side B" })
+    elseif _empireMode == 3 then
+        _board.editButton({ index = 1, label = "Empires - Random Side" })
+    elseif _empireMode == 4 then
+        _board.editButton({ index = 1, label = "Empires - Manual" })
+    end
+end
+
+function produce()
+    local tableObjects = Physics.cast({
+        origin       = { 0, 0, 0},
+        direction    = { 0, 1, 1 },
+        type         = 3,
+        max_distance = 0.7,
+        size         = { 96, 0.1, 47 },
+        debug        = _debug,
+    })
+
+    local tokensOnBoard = 0
+
+    for i, o in pairs(tableObjects) do
+        if (o.hit_object.tag == "Generic" and _bags[string.lower(o.hit_object.getName())] != nil) then
+            print (o.hit_object.guid)
+            tokensOnBoard = tokensOnBoard + 1
+        end
+    end
+
+    if (tokensOnBoard != 0) then
+        broadcastToAll("There are still tokens not assigned (on the table). Please move them to either construction cards on to the empire.", { 1, 0, 0 })
+
+        return 0
+    end
+
+    local maxProduction = 0
+    local playersProduction = {}
+
+    for i, player in pairs(_Players) do
+        local playerProduction = 0
+
+        debug ("Production for " .. player.color .. " -- " .. _productionStages[_currentProductionStage])
+
+        local productionArea = Physics.cast({
+            origin       = _productionZones[player.color],
+            direction    = { 0, 1, 0 },
+            type         = 3,
+            size         = { 7.1, 5, 18.26 },
+            debug        = _debug
+        })
+
+        local positionOffset = 0
+
+        for j, o in pairs(productionArea) do
+            if (o.hit_object.tag == "Card" or o.hit_object.tag == "Tile") then
+                local cardDetails = _allCards[o.hit_object.guid]
+
+                if cardDetails != nil and cardDetails.Production != nil then
+                    debug("Processing: " .. cardDetails.Name .. " -- " .. o.hit_object.guid)
+
+                    for k, production in pairs(cardDetails.Production) do
+                        if string.lower(production) == string.lower(_productionStages[_currentProductionStage]) then
+                            local position = _productionDepositPositions[player.color]
+                            local howMany = 1
+
+                            if (cardDetails.ProductionMultiplierType != nil) then
+                                howMany = 0
+
+                                for l, cardTypes in pairs(productionArea) do
+                                    if (cardTypes.hit_object.tag == "Card") then
+                                        local cardDetailsTypes = _allCards[cardTypes.hit_object.guid]
+
+                                        if (cardDetailsTypes.Type != nil and string.lower(cardDetailsTypes.Type) == string.lower(cardDetails.ProductionMultiplierType)) then
+                                            debug(cardDetailsTypes.Name .. " -- " .. cardTypes.hit_object.guid)
+                                            howMany = howMany + 1
+                                        end
+                                    end
+                                end
+                            end
+
+                            playerProduction = playerProduction + howMany
+
+                            for c = 1, howMany do
+                                _bags[string.lower(production)].takeObject({
+                                    position          = { position.x + positionOffset, position.y, position.z },
+                                    smooth            = false,
+                                    index             = 1,
+                                })
+
+                                if (player.getHandTransform().rotation.y > 5 or player.getHandTransform().rotation.y < -5) then
+                                    positionOffset = positionOffset - 1
+                                else
+                                    positionOffset = positionOffset + 1
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if (maxProduction < playerProduction) then
+            maxProduction = playerProduction
+        end
+        playersProduction[player.color] = playerProduction
+    end
+
+    local bonus = ""
+
+    if (maxProduction > 0) then
+        for i, playerProduction in pairs(playersProduction) do
+            if (playerProduction == maxProduction) then
+                if (bonus != "") then
+                    bonus = ""
+                    break
+                else
+                    bonus = i
+                end
+            end
+        end
+    end
+
+
+    if (bonus != "") then
+        broadcastToAll("Production bonus goes to the " .. bonus .. " player. Please collect your reward.", bonus)
+    else
+        broadcastToAll("No production bonus", "White")
+    end
+
+
+    _currentProductionStage = _currentProductionStage + 1
+
+    if (_currentProductionStage == 6) then
+        _currentProductionStage = 1
+        _board.editButton({ index = 2, scale = { 0, 0, 0 } })
+
+        if (_currentRound <= 4) then
+            _board.editButton({ index = 0, scale = { 1, 1, 1 } })
+        else
+            _board.editButton({ index = 3, scale = { 1, 1, 1 } })
+        end
+    end
+
+    _board.editButton({ index = 2, label = "Produce\n" .. _productionStages[_currentProductionStage] })
+
+end
+
+--[[ The onUpdate event is called once per frame. --]]
+function onUpdate()
+
+end
+
+function onObjectDrop(color, obj)
+
+end
+
+function onPlayerChangeColor(player_color)
+    _Players = Player.getPlayers()
+end
+
+function createRoundButtons()
+    _Players = Player.getPlayers()
+
+    for i, player in pairs(_Players) do
+        _cardSelectedButtons[player.color] = spawnObject({
+            type              = "BlockSquare",
+            position          = _cardSelectedButtonLocations[player.color],
+            rotation          = { 0, 180 - player.getHandTransform().rotation.y, 0 },
+            scale             = { 4.00, 0.10, 2.00 }
+        })
+
+        _draftPlayersReady = {}
+        _currentDraftRound = 1
+
+        _cardSelectedButtons[player.color].setLock(true)
+        _cardSelectedButtons[player.color].createButton({
+            click_function = "roundReady",
+            function_owner = self,
+            label          = "Mark\r\nReady",
+            position       = { 0, 1, 0 },
+            rotation       = { 0, 0, 0 },
+            width          = 450,
+            height         = 400,
+            font_size      = 75,
+            color          = { 1, 1, 1, 1.0 },
+            font_color     = { 0, 0, 0, 1.0 },
+            tooltip        = "Mark Ready"
+        })
+    end
+end
+
+function roundReady(o, color, alt)
+    if _draftPlayersReady[color] == nil then
+        _draftPlayersReady[color] = true
+    else
+        _draftPlayersReady[color] = not _draftPlayersReady[color]
+    end
+
+    if _draftPlayersReady[color] then
+        local zone = getObjectFromGUID(_draftZoneGuids[color])
+        if #zone.getObjects() - 1 != _currentDraftRound then
+            broadcastToColor("Please put a card into draft area of your color first", color, {1, 0, 0})
+            _draftPlayersReady[color] = false
+            return
+        end
+
+        o.editButton({ label = "Mark\t\nNot Ready", tooltip = "Mark Not Ready" })
+        o.setColorTint({ 0, 1, 0, 1.0 })
+    else
+        o.editButton({ label = "Mark\t\nReady", tooltip = "Mark Ready" })
+        o.setColorTint({ 1, 0, 0, 1.0 })
+    end
+
+    local readyPlayers = 0
+    for i, v in pairs(_draftPlayersReady) do
+        if v then
+            readyPlayers = readyPlayers + 1
+        end
+    end
+
+    broadcastToAll(readyPlayers .. " out of " .. #_Players .. " players are ready", { 1, 1, 1})
+
+    if readyPlayers == #_Players then
+        draftRoundReady()
+    end
+end
+
+function draftRoundReady()
+    local draftedCardsTotal = 0
+
+    for i, p in pairs(_Players) do
+        local cards = getObjectFromGUID(_draftZoneGuids[p.color]).getObjects()
+
+        for j, c in pairs(cards) do
+            if (c.tag == "Card") then
+                local cardRotation = c.getRotation()
+
+                draftedCardsTotal = draftedCardsTotal + 1
+
+                if cardRotation.z != 0 then c.setRotation({ cardRotation.x, cardRotation.y, 0 }) end
+
+                c.setLock(true)
+            end
+        end
+    end
+
+    if (draftedCardsTotal / #_Players) == 7 then
+        for i, b in pairs(_cardSelectedButtons) do
+            destroyObject(b)
+        end
+
+        for i, p in pairs(_Players) do
+            local cardsInHand = p.getHandObjects()
+
+            if #cardsInHand > 0 then
+                for j, card in pairs(cardsInHand) do
+                    card.setLock(false)
+                    card.setPosition(_discardPileLocation)
+                    card.setRotation(_discardPileRotation)
+                end
+            end
+
+            _playersDraftDone[p.color] = 0
+        end
+
+        setupDraftedCardsButtons()
+    else
+        for i, b in pairs(_cardSelectedButtons) do
+            b.editButton({ label = "Mark\t\nReady", tooltip = "Mark Ready" })
+            b.setColorTint({ 1, 0, 0, 1.0 })
+        end
+
+        _draftPlayersReady = {}
+
+        rotateHands()
+    end
+
+    _currentDraftRound = _currentDraftRound + 1
+end
+
+function incrementPlayersDraftDone(color)
+    _playersDraftDone[color] = _playersDraftDone[color] + 1
+
+    --local playersDone = 0
+
+  --for i, d in pairs(_playersDraftDone) do
+  --      if d == 7 then playersDone = playersDone + 1 end
+  --  end
+
+    for i, draftZoneGuid in pairs(_draftZoneGuids) do
+      if (#getObjectFromGUID(draftZoneGuid).getObjects() > 1) then
+        return false
+      end
+    end
+    --if playersDone == #_Players then
+    _board.editButton({ index = 2, scale = { 1, 1, 1 } })
+    --end
+end
+
+function setupDraftedCardsButtons()
+    for i, p in pairs(_Players) do
+        local cards = getObjectFromGUID(_draftZoneGuids[p.color]).getObjects()
+
+        for j, card in pairs(cards) do
+            if (card.tag == "Card") then
+                card.setLock(true)
+
+                card.createButton({
+                    click_function = "buildCard",
+                    label          = "Build",
+                    tooltip        = "Build",
+                    position       = { 0, 1, -1.85 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                })
+
+                card.createButton({
+                    click_function = "recycleCard",
+                    label          = "Recycle",
+                    tooltip        = "Recycle",
+                    position       = { 0, 1, -2.35 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                    color          = { 1, 0.75, 0.75, 1.0 }
+                })
+
+                card.createButton({
+                    click_function = "recycleCardConfirm",
+                    label          = "Confirm",
+                    tooltip        = "Confirm Recycle",
+                    position       = { 0, 1, -1.85 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                    color          = { 1, 0.75, 0.75, 1.0 },
+                    scale          = { 0, 0, 0 }
+                })
+
+                card.createButton({
+                    click_function = "recycleCardCancel",
+                    label          = "Cancel",
+                    tooltip        = "Cancel Recycle",
+                    position       = { 0, 1, -2.35 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                    scale          = { 0, 0, 0 }
+                })
+
+                card.createButton({
+                    click_function = "recycleBuildCardCancel",
+                    label          = "Cancel",
+                    tooltip        = "Cancel Recycle",
+                    position       = { 0, 1, -2.35 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                    scale          = { 0, 0, 0 }
+                })
+
+                card.createButton({
+                    click_function = "completeConstruction",
+                    label          = "Complete",
+                    tooltip        = "Complete",
+                    position       = { 0, 1, -1.85 },
+                    rotation       = { 0, 0, 0 },
+                    width          = 1000,
+                    height         = 250,
+                    color          = { 0.75, 1, 0.75, 1.0 },
+                    scale          = { 0, 0, 0 }
+                })
+            end
+        end
+    end
+end
+
+function removeTokensFromCard(card)
+    local cardPosition = card.getPosition()
+
+    local cardArea = Physics.cast({
+        origin       = cardPosition,
+        direction    = { 0, 1, 0 },
+        type         = 3,
+        size         = { 3.5, 1.0, 5.5 }
+    })
+
+    for i, castObject in pairs(cardArea) do
+        if (castObject.hit_object != nil and (castObject.hit_object.tag == "Generic" or castObject.hit_object.tag == "Tile") and castObject.hit_object.getName() != nil and _bags[string.lower(castObject.hit_object.getName())]) then
+            castObject.hit_object.destruct()
+        end
+    end
+end
+
+function buildCard(card, color, alt_click)
+    removeTokensFromCard(card)
+
+    for i, position in pairs(_constructionZonePositions[color]) do
+        local exists = Physics.cast({
+            origin       = position,
+            direction    = { 0, 1, 0 },
+            max_distance = 1,
+            type         = 3
+        })
+
+        if #exists == 0 then
+            card.editButton({ index = 0, scale = { 0, 0, 0 } })
+            card.editButton({ index = 1, scale = { 1, 1, 1 } })
+            card.editButton({ index = 2, scale = { 0, 0, 0 } })
+            card.editButton({ index = 3, scale = { 0, 0, 0 } })
+            card.editButton({ index = 4, scale = { 0, 0, 0 } })
+            card.editButton({ index = 5, scale = { 1, 1, 1 } })
+
+            card.setPosition(position)
+            break
+        end
+    end
+
+    card.setLock(true)
+
+    Wait.time(function()
+      incrementPlayersDraftDone(color)
+    end, 0.2)
+
+end
+
+
+function recycleCard(card, color, alt_click)
+    local cardButtons = card.getButtons()
+
+    if cardButtons[1].scale["x"] == 1 then
+        card.editButton({ index = 3, scale = { 1, 1, 1 } })
+        card.editButton({ index = 4, scale = { 0, 0, 0 } })
+    elseif cardButtons[6].scale["x"] == 1 then
+        card.editButton({ index = 3, scale = { 0, 0, 0 } })
+        card.editButton({ index = 4, scale = { 1, 1, 1 } })
+    end
+
+    card.editButton({ index = 0, scale = { 0, 0, 0 } })
+    card.editButton({ index = 1, scale = { 0, 0, 0 } })
+    card.editButton({ index = 2, scale = { 1, 1, 1 } })
+    card.editButton({ index = 5, scale = { 0, 0, 0 } })
+end
+
+function recycleCardCancel(card, color, alt_click)
+    card.editButton({ index = 0, scale = { 1, 1, 1 } })
+    card.editButton({ index = 1, scale = { 1, 1, 1 } })
+    card.editButton({ index = 2, scale = { 0, 0, 0 } })
+    card.editButton({ index = 3, scale = { 0, 0, 0 } })
+    card.editButton({ index = 4, scale = { 0, 0, 0 } })
+    card.editButton({ index = 5, scale = { 0, 0, 0 } })
+end
+
+function recycleBuildCardCancel(card, color, alt_click)
+    card.editButton({ index = 0, scale = { 0, 0, 0 } })
+    card.editButton({ index = 1, scale = { 1, 1, 1 } })
+    card.editButton({ index = 2, scale = { 0, 0, 0 } })
+    card.editButton({ index = 3, scale = { 0, 0, 0 } })
+    card.editButton({ index = 4, scale = { 0, 0, 0 } })
+    card.editButton({ index = 5, scale = { 1, 1, 1 } })
+end
+
+function recycleCardConfirm(card, color, alt_click)
+    local recycleBonus = string.lower(_allCards[card.guid].Recycle)
+
+    local cardPosition = card.getPosition()
+
+    removeTokensFromCard(card)
+
+    if (card.getRotation().y > 10 or card.getRotation().y < -10) then
+        cardPosition.z = cardPosition.z + 3.5
+    else
+        cardPosition.z = cardPosition.z - 3.5
+    end
+
+    _bags[recycleBonus].takeObject({
+        position          = cardPosition,
+        smooth            = false,
+        index             = 1,
+    })
+
+    card.clearButtons()
+    card.setLock(false)
+    card.setPosition(_discardPileLocation)
+    card.setRotation(_discardPileRotation)
+
+    Wait.time(function()
+      incrementPlayersDraftDone(color)
+    end, 0.2)
+end
+
+function completeConstruction(card, color, alt_click)
+    local cardPosition = card.getPosition()
+    local cardDetail = _allCards[card.guid]
+
+    local cardArea = Physics.cast({
+        origin       = cardPosition,
+        direction    = { 0, 1, 0 },
+        type         = 3,
+        size         = { 3.5, 1.0, 5.5 }
+    })
+
+    paid = {}
+    krystalliums = 0
+    spent = {}
+
+    for i, castObject in pairs(cardArea) do
+        if (castObject.hit_object != nil and (castObject.hit_object.tag == "Generic" or castObject.hit_object.tag == "Tile") and castObject.hit_object.getName() != nil and _bags[string.lower(castObject.hit_object.getName())]) then
+            if (string.lower(castObject.hit_object.getName()) == "krystallium") then
+                krystalliums = krystalliums + 1
+            else
+                if (castObject.hit_object.getQuantity() != -1) then
+                  for i=1,castObject.hit_object.getQuantity() do
+                    table.insert(paid, castObject.hit_object.getName())
+                  end
+                else
+                  table.insert(paid, castObject.hit_object.getName())
+                end
+            end
+        end
+    end
+
+    for i, c in pairs(cardDetail.Cost) do
+        local match = false
+
+        for j, p in pairs(paid) do
+            if (string.lower(p) == string.lower(c)) then
+                table.remove(paid, j)
+                table.insert(spent, p)
+
+                match = true
+            end
+        end
+
+        if (match != true and krystalliums > 0) then
+            match = true
+            krystalliums = krystalliums - 1
+            table.insert(spent, "Krystallium")
+        end
+    end
+
+    if (#spent == #cardDetail.Cost) then
+        removeTokensFromCard(card)
+
+        if (cardDetail.BuildBonus != nil) then
+            for i, b in pairs(cardDetail.BuildBonus) do
+                local bonusPosition = {}
+                local bag = nil
+
+                if (string.lower(b) == "general") then
+                    bonusPosition = _generals[color]
+                elseif (string.lower(b) == "financier") then
+                    bonusPosition = _financiers[color]
+                else
+                    bonusPosition = _playerKrystalliumsPosition[color]
+                    bag = _playerKrystalliumBags[color]
+                end
+
+                _bags[string.lower(b)].takeObject({
+                    position          = bonusPosition,
+                    smooth            = false,
+                    index             = 1
+                })
+            end
+        end
+
+        for i, p in pairs(_constructedZonePositions[color]) do
+            local cardExists = Physics.cast({
+                origin       = p,
+                direction    = { 0, 1, 0 },
+                type         = 3
+            })
+
+            if (#cardExists == 0) then
+                card.clearButtons()
+                card.setPosition(p)
+                break
+            end
+        end
+    elseif (#spent >= #cardDetail.Cost) then
+      broadcastToColor("Too many resources to complete construction", color, { 1, 0, 0 })
+    else
+        broadcastToColor("Insufficient resources to complete construction", color, { 1, 0, 0 })
+    end
+end
+
+function putInBag(obj, bag)
+    if (bag != nil) then
+        obj.putObject(bag)
+    end
+end
+
+function getRealSeatedPlayers()
+    local playerColors = getSeatedPlayers()
+    local players = {}
+    local newI = 1
+    for i, playerColor in pairs(playerColors) do
+        if Player[playerColor].getPlayerHand() != nil
+        then
+            players[newI] = Player[playerColor]
+            newI = newI + 1
+        end
+    end
+    return players
+end
+
+function playersCounterClockwise(players)
+    local newPlayers = {}
+    local newI = 1
+    for i, player in pairsByKeys(playerAngles(players)) do
+        newPlayers[newI] = player
+        newI = newI + 1
+    end
+    return newPlayers
+end
+
+function playersClockwise(players)
+    local newPlayers = {}
+    local newI = #players
+    for i, player in pairsByKeys(playerAngles(players)) do
+        newPlayers[newI] = player
+        newI = newI - 1
+    end
+    return newPlayers
+end
+
+function getPlayerHandPosition(player)
+    hand = player.getPlayerHand()
+    return {hand.pos_x, hand.pos_y, hand.pos_z}
+end
+
+function getPlayerAngle(player)
+    local hand = player.getPlayerHand()
+    return math.atan2(hand.pos_z, hand.pos_x)
+end
+
+-- Returns a Table with player angles (in radians) as the keys
+function playerAngles(players)
+    local angles = {}
+    for i, player in pairs(players) do
+        angles[getPlayerAngle(player)] = player
+    end
+    return angles
+end
+
+function playersCounterClockwise(players)
+    local newPlayers = {}
+    local newI = 1
+    for i, player in pairsByKeys(playerAngles(players)) do
+        newPlayers[newI] = player
+        newI = newI + 1
+    end
+    return newPlayers
+end
+
+function playersClockwise(players)
+    local newPlayers = {}
+    local newI = #players
+
+    for i, player in pairsByKeys(playerAngles(players)) do
+        newPlayers[newI] = player
+        newI = newI - 1
+    end
+    return newPlayers
+end
+
+function rotateHands()
+    local players = getRealSeatedPlayers()
+    local playersOrdered = {}
+
+    if _currentRound % 2 == 0 then
+        playersOrdered = playersCounterClockwise(players)
+    else
+        playersOrdered = playersClockwise(players)
+    end
+
+    for i, player in ipairs(playersOrdered) do
+        local moveToIndex = 1
+        if i == #players then
+            moveToIndex = 1
+        else
+            moveToIndex = i + 1
+        end
+
+        local moveToPlayer = playersOrdered[moveToIndex]
+        vectoreToMove = getPlayerHandPosition(moveToPlayer)
+
+        rotationOffsetY = moveToPlayer.getHandTransform().rotation.y - player.getHandTransform().rotation.y
+
+        if rotationOffsetY < 0 then
+            rotationOffsetY = rotationOffsetY + 360
+        end
+
+        for i,card in ipairs(player.getHandObjects()) do
+            --card.setPosition(getPlayerHandPosition(moveToPlayer))
+            card.setPosition(vectoreToMove)
+            --card.setPositionSmooth(vectoreToMove, true, true)
+            card.rotate({0, rotationOffsetY, 0})
+          --  print(i.." - "..card.getGUID().." from "..player.color.." to "..moveToPlayer.color)
+        end
+    end
+end
+
+function pairsByKeys (t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+        table.sort(a, f)
+        local i = 0      -- iterator variable
+        local iter = function ()   -- iterator function
+        i = i + 1
+        if a[i] == nil then return nil
+            else return a[i], t[a[i]]
+        end
+    end
+    return iter
+end
+
+function reverseArray(tbl)
+  for i=1, math.floor(#tbl / 2) do
+    local tmp = tbl[i]
+    tbl[i] = tbl[#tbl - i + 1]
+    tbl[#tbl - i + 1] = tmp
+  end
+end
+
+function playersColorsOtherThan(color)
+    local result = {}
+    local counter = 0
+
+    for i, p in pairs(_Players) do
+        if p.color != color then
+            counter = counter + 1
+            result[counter] = p.color
+        end
+    end
+
+    return result
+end
+
+function reverseTable(t)
+    local reversedTable = {}
+    local itemCount = #t
+    for k, v in ipairs(t) do
+        reversedTable[itemCount + 1 - k] = v
+    end
+    return reversedTable
+end
+
+function wait(delay)
+--[[simple quality of life function for pausing--]]
+	for n = 1, delay do
+        coroutine.yield(0)
+	end
+end
+
+function debug(message)
+    if (_debug) then
+        print (message)
+    end
+end
+
+function spairs(t, order)
+    -- collect the keys
+    local keys = {}
+    for k in pairs(t) do
+        keys[#keys+1] = k
+    end
+
+    -- if order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    -- return the iterator function
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
