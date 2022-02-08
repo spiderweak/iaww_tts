@@ -1,4 +1,5 @@
 _deckGuid = "354cf2"
+_expansionDeckGuid = "000000"
 _roundMarkerGuid = "0e537e"
 _variableSetupGuid = "ff9bdf"
 _boardGuid = "437cd7"
@@ -357,12 +358,14 @@ function startGame()
     _currentRound = _currentRound + 1
 
     local deck = getObjectFromGUID(_deckGuid)
+    local expansion_deck = getObjectFromGUID(_expansionDeckGuid)
 
     if _currentRound == 1 then
         --_buttons["StartGame"].editButton({ label = "Start Next Round", tooltip = "Start Next Round" })
         _board.editButton({ index = 0, label = "Start Next Round" })
 
         deck.shuffle()
+        expansion_deck.shuffle()
 
         startLuaCoroutine(Global, "dealEmpires")
 
@@ -379,9 +382,11 @@ function startGame()
     roundMarker.highlightOn({ 1, 1, 1 }, 3)
 
     if #getSeatedPlayers() == 2 then
-        deck.deal(10)
-    else
         deck.deal(7)
+        expansion_deck.deal(3)
+    else
+        deck.deal(5)
+        expansion_deck.deal(2)
     end
 
     createRoundButtons()
@@ -546,16 +551,14 @@ function produce()
                                     end
                                 end
                             end
-
                             playerProduction = playerProduction + howMany
-
                         end
                     end
                 end
             end
         end
 
-        if playerProduction > 0 then
+        if (playerProduction > 0) then
             for c = 1, playerProduction do
                 _bags[string.lower(production)].takeObject({
                     position          = { position.x + positionOffset, position.y, position.z },

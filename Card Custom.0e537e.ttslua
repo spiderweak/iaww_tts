@@ -577,16 +577,16 @@ function setupCards()
     cards["742cb1"] = { Name = "Aztec Empire - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Energy", "Energy", "Exploration" }, ProductionMultiplierType = nil, Score = 3, ScoreMultiplier = "Discovery" }
     cards["e0676d"] = { Name = "Federation Of Asia - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Gold", "Gold" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Project" }
     cards["0776f9"] = { Name = "Panafrican Union - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Science", "Science" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Research" }
-    cards["000000"] = { Name = "Nations d Oceanie - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Material", "Energy" }, ProductionMultiplierType = nil, Score = 1, ScoreMultiplier = "Structure" }
-    cards["000000"] = { Name = "Hegemonie du Nord - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Energy", "Energy", "Energy" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Vehicle" }
+    cards["acadf8"] = { Name = "Nations d Oceanie - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Material", "Energy" }, ProductionMultiplierType = nil, Score = 1, ScoreMultiplier = "Structure" }
+    cards["bf0c8f"] = { Name = "Hegemonie du Nord - A", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Energy", "Energy", "Energy" }, ProductionMultiplierType = nil, Score = 2, ScoreMultiplier = "Vehicle" }
 
     cards["6f1934"] = { Name = "Noram States - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
     cards["a347a2"] = { Name = "Republic Of Europe - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
     cards["0fec54"] = { Name = "Aztec Empire - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
     cards["524ce7"] = { Name = "Federation Of Asia - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
     cards["b339ab"] = { Name = "Panafrican Union - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
-    cards["000000"] = { Name = "Nations d Oceanie - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
-    cards["000000"] = { Name = "Hegemonie du Nord - ²B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["9f5b42"] = { Name = "Nations d Oceanie - B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
+    cards["8dfdab"] = { Name = "Hegemonie du Nord - ²B", Recycle = nil, Cost = nil, BuildBonus = nil, Type = "Empire", Production = { "Material", "Material", "Energy", "Science" }, ProductionMultiplierType = nil, Score = nil, ScoreMultiplier = nil }
 
     Global.setTable("_allCards", cards)
 end
