@@ -1,12 +1,12 @@
 _deckGuid = "354cf2"
-_expansionDeckGuid = "000000"
+_expansionDeckGuid = "a01351"
 _roundMarkerGuid = "0e537e"
 _variableSetupGuid = "ff9bdf"
 _boardGuid = "437cd7"
 _draftAreas = {
   "5bf9d2",
   "bb9dda",
-  "70f7b6" ,
+  "70f7b6",
   "24d62b",
   "800d2a"
 }
