@@ -539,15 +539,16 @@ function produce()
                 if cardDetails != nil and cardDetails.Production != nil then
                     debug("Processing: " .. cardDetails.Name .. " -- " .. o.hit_object.guid)
 
-                    for k, loss in pairs(cardDetails.Loss) do
-                        if string.lower(loss) == string.lower(_productionStages[_currentProductionStage]) then
-                            playerProduction = playerProduction - 1
+                    if (cardDetails.Loss != nil) then
+                        for k, loss in pairs(cardDetails.Loss) do
+                            if string.lower(loss) == string.lower(_productionStages[_currentProductionStage]) then
+                                playerProduction = playerProduction - 1
+                            end
                         end
                     end
 
                     for k, production in pairs(cardDetails.Production) do
                         if string.lower(production) == string.lower(_productionStages[_currentProductionStage]) then
-                            local position = _productionDepositPositions[player.color]
                             local howMany = 1
 
                             if (cardDetails.ProductionMultiplierType != nil) then
@@ -572,8 +573,9 @@ function produce()
         end
 
         if (playerProduction > 0) then
+            local position = _productionDepositPositions[player.color]
             for c = 1, playerProduction do
-                _bags[string.lower(production)].takeObject({
+                _bags[string.lower(_productionStages[_currentProductionStage])].takeObject({
                     position          = { position.x + positionOffset, position.y, position.z },
                     smooth            = false,
                     index             = 1,
