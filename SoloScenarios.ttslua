@@ -1,0 +1,11 @@
+function setupCards()
+    local scenarios = {}
+    scenarios["bg-1"] = { Name = "To the center of the earth" , StartupCards = {"Polar Base" , "Mega-Drill" , "Super-Sonar" , "Center of the Earth"} , Goals = {70, 95, 115}}
+    scenarios["bg-2"] = { Name = "A better world" , StartupCards = {"Recycling Plant" , "Wind Turbines" , "Universal Vaccine" , "Aquaculture"} , Goals = {70, 95, 115}}
+    scenarios["bg-3"] = { Name = "They are among us" , StartupCards = {"Unknown Technology" , "Saucer Squadron" , "Lunar Base" , "Secret Laboratory"} , Goals = {70, 90, 105}}
+    scenarios["bg-4"] = { Name = "Back to the future" , StartupCards = {"Research Center" , "Neuroscience" , "Time Travel"} , Goals = {65, 85, 105}}
+    scenarios["bg-5"] = { Name = "The end of times" , StartupCards = {"Industrial Complex" , "Underground City" , "Underwater City" , "Secret Society"} , Goals = {75, 95, 120}}
+    scenarios["bg-6"] = { Name = "Money has no smell" , StartupCards = {"Financial Center" , "Propaganda Center" , "National Monument"} , Goals = {60, 85, 105}}
+
+    Global.setTable("_allscenarios", scenarios)
+end
